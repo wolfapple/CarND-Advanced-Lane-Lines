@@ -25,6 +25,7 @@ The goals / steps of this project are the following:
 [image10]: ./output_images/histogram.png "Histogram"
 [image11]: ./output_images/sliding_window.png "Sliding window"
 [image12]: ./output_images/final.png "Final"
+[image13]: ./output_images/skip_sliding_window.png "Skip sliding window"
 
 ## Camera Calibration
 
@@ -133,4 +134,30 @@ Below is the final image with lane area drawn.
 
 ## Pipeline (video)
 
+### Skip the sliding windows
+
+If the input was video, I could find the lane in a slightly better way. Once the line is found, in the next frame of video I don't need to do a blind search again, but instead I can just search in a margin around the previous line position like this:
+
+![Skip sliding window][image13]
+
+To do this, I wrote the `find_lines_by_previous()` function.
+
+### Other tricks
+
+I checked that endpoints of the lines are separated by approximately the right distance horizontally. Doing this I checked they are roughly parallel.
+
+If my sanity checks reveal that the lane lines are problematic, I can simply assume it was a bad or difficult frame of video, retain the previous lines and step to the next frame to search again.
+
+Even when everything is working, my line detections will jump around from frame to frame. To obtain a cleaner result, it can be preferable to smooth over the last n frames of video. So, I used the average of the five most recent measurements when displaying lanes in the image.
+
+The code to perform the above is in `Lanes` class.
+
+Here's a [link to my video result](./project_video_output.mp4)
+
 ## Discussion
+
+I think that the most important thing in this project is thresholding. It is very difficult to perform other subsequent tasks without accurately identifying the pixels in the lane. I've handled the given video moderately, but I think we need to test it in a variety of situations. It would be nice if there were images taken in various situations, such as different weather conditions, day and night, and various road surfaces. I've only implemented it with some of the techniques I've learned in my class, but I think more research is needed.
+
+For the perspective transformation, I used a simple method to find four source points from the images of straight lines. However, this is possible because the road is assumed to be flat plane. Strictly speaking, this is not true, so I think it can be improved a little more.
+
+Finally, I should check that the my detected lane lines makes sense. To confirm that my detected lane lines are real, I found the endpoints of lines and used the distance between the points. If I could inspect the lines in a better way, I think I could get better results.
